@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowRight,
@@ -18,12 +18,21 @@ import {
   Sparkles,
   Stethoscope,
   TrafficCone,
+  X,
 } from "lucide-react";
 import "./styles.css";
 
 const phoneNumber = "031-965-5775";
 const naverMapUrl =
   "https://map.naver.com/p/search/%ED%99%94%EC%A0%95%EC%BD%94%EC%95%A4%ED%82%A4%ED%95%9C%EC%9D%98%EC%9B%90";
+
+const navigationItems = [
+  ["한의원 소개", "#about"],
+  ["진료 분야", "#clinics"],
+  ["치료/한약 안내", "#treatment"],
+  ["오시는 길", "#location"],
+  ["공지", "#notice"],
+];
 
 const clinicGroups = [
   {
@@ -124,9 +133,13 @@ function App() {
 }
 
 function SiteHeader() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const closeMenu = () => setIsMenuOpen(false);
+
   return (
     <header className="site-header">
-      <a className="brand" href="#top" aria-label="화정코앤키한의원 홈">
+      <a className="brand" href="#top" aria-label="화정코앤키한의원 홈" onClick={closeMenu}>
         <span className="brand-mark">K</span>
         <span>
           <strong>화정코앤키한의원</strong>
@@ -134,20 +147,57 @@ function SiteHeader() {
         </span>
       </a>
       <nav className="desktop-nav" aria-label="주요 메뉴">
-        <a href="#about">한의원 소개</a>
-        <a href="#clinics">진료 분야</a>
-        <a href="#treatment">치료/한약 안내</a>
-        <a href="#location">오시는 길</a>
-        <a href="#notice">공지</a>
+        {navigationItems.map(([label, href]) => (
+          <a href={href} key={href}>
+            {label}
+          </a>
+        ))}
       </nav>
       <div className="header-actions">
         <a className="header-phone" href={`tel:${phoneNumber}`}>
           <Phone size={18} aria-hidden="true" />
           <span>{phoneNumber}</span>
         </a>
-        <button className="menu-button" type="button" aria-label="메뉴 열기">
-          <Menu size={22} aria-hidden="true" />
+        <button
+          className="menu-button"
+          type="button"
+          aria-label={isMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-menu"
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          {isMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
         </button>
+      </div>
+      <div
+        className={`mobile-menu ${isMenuOpen ? "is-open" : ""}`}
+        id="mobile-menu"
+        aria-hidden={!isMenuOpen}
+      >
+        <nav aria-label="모바일 주요 메뉴">
+          {navigationItems.map(([label, href]) => (
+            <a href={href} key={href} onClick={closeMenu}>
+              {label}
+              <ChevronRight size={18} aria-hidden="true" />
+            </a>
+          ))}
+        </nav>
+        <div className="mobile-menu-actions">
+          <a className="btn btn-primary" href={`tel:${phoneNumber}`} onClick={closeMenu}>
+            <Phone size={19} aria-hidden="true" />
+            전화하기
+          </a>
+          <a
+            className="btn btn-secondary"
+            href={naverMapUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={closeMenu}
+          >
+            <MapPin size={19} aria-hidden="true" />
+            길찾기
+          </a>
+        </div>
       </div>
     </header>
   );
@@ -421,4 +471,3 @@ function BottomCTA() {
 }
 
 createRoot(document.getElementById("root")).render(<App />);
-
