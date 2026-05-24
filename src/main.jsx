@@ -27,11 +27,35 @@ const naverMapUrl =
   "https://map.naver.com/p/search/%ED%99%94%EC%A0%95%EC%BD%94%EC%95%A4%ED%82%A4%ED%95%9C%EC%9D%98%EC%9B%90";
 
 const navigationItems = [
-  ["한의원 소개", "#about"],
-  ["진료 분야", "#clinics"],
-  ["치료/한약 안내", "#treatment"],
-  ["오시는 길", "#location"],
-  ["공지", "#notice"],
+  { label: "한의원 소개", view: "about" },
+  { label: "진료 분야", view: "clinics" },
+  { label: "치료/한약 안내", view: "treatment" },
+  { label: "오시는 길", view: "location" },
+  { label: "공지", view: "notice" },
+];
+
+const menuGroups = [
+  {
+    title: "한의원",
+    items: [
+      { label: "한의원 소개", view: "about" },
+      { label: "병원 둘러보기", view: "about" },
+    ],
+  },
+  {
+    title: "진료",
+    items: [
+      { label: "진료 분야", view: "clinics" },
+      { label: "치료/한약 안내", view: "treatment" },
+    ],
+  },
+  {
+    title: "방문",
+    items: [
+      { label: "오시는 길/진료시간", view: "location" },
+      { label: "공지/블로그", view: "notice" },
+    ],
+  },
 ];
 
 const clinicGroups = [
@@ -113,33 +137,52 @@ const notices = [
 ];
 
 function App() {
+  const [activeView, setActiveView] = useState(() => {
+    const view = window.location.hash.replace("#", "");
+    return ["about", "clinics", "treatment", "location", "notice"].includes(view) ? view : "home";
+  });
+
+  const navigateTo = (view) => {
+    setActiveView(view);
+    const nextUrl = view === "home" ? window.location.pathname : `#${view}`;
+    window.history.pushState(null, "", nextUrl);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <>
-      <SiteHeader />
+      <SiteHeader activeView={activeView} onNavigate={navigateTo} />
       <main>
-        <Hero />
-        <QuickClinics />
-        <TrustSection />
-        <AboutSection />
-        <TreatmentSection />
-        <GallerySection />
-        <LocationSection />
-        <NoticeSection />
+        {activeView === "home" ? (
+          <HomePage onNavigate={navigateTo} />
+        ) : (
+          <SubPage activeView={activeView} onNavigate={navigateTo} />
+        )}
       </main>
       <SiteFooter />
-      <BottomCTA />
+      <BottomCTA onNavigate={navigateTo} />
     </>
   );
 }
 
-function SiteHeader() {
+function SiteHeader({ activeView, onNavigate }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const closeMenu = () => setIsMenuOpen(false);
+  const handleNavigate = (event, view) => {
+    event.preventDefault();
+    closeMenu();
+    onNavigate(view);
+  };
 
   return (
     <header className="site-header">
-      <a className="brand" href="#top" aria-label="화정코앤키한의원 홈" onClick={closeMenu}>
+      <a
+        className="brand"
+        href="/konki-webdesign/"
+        aria-label="화정코앤키한의원 홈"
+        onClick={(event) => handleNavigate(event, "home")}
+      >
         <span className="brand-mark">K</span>
         <span>
           <strong>화정코앤키한의원</strong>
@@ -147,9 +190,14 @@ function SiteHeader() {
         </span>
       </a>
       <nav className="desktop-nav" aria-label="주요 메뉴">
-        {navigationItems.map(([label, href]) => (
-          <a href={href} key={href}>
-            {label}
+        {navigationItems.map((item) => (
+          <a
+            href={`#${item.view}`}
+            key={item.view}
+            className={activeView === item.view ? "is-active" : ""}
+            onClick={(event) => handleNavigate(event, item.view)}
+          >
+            {item.label}
           </a>
         ))}
       </nav>
@@ -175,11 +223,24 @@ function SiteHeader() {
         aria-hidden={!isMenuOpen}
       >
         <nav aria-label="모바일 주요 메뉴">
-          {navigationItems.map(([label, href]) => (
-            <a href={href} key={href} onClick={closeMenu}>
-              {label}
-              <ChevronRight size={18} aria-hidden="true" />
-            </a>
+          <a href="/konki-webdesign/" onClick={(event) => handleNavigate(event, "home")}>
+            홈
+            <ChevronRight size={18} aria-hidden="true" />
+          </a>
+          {menuGroups.map((group) => (
+            <div className="mobile-menu-group" key={group.title}>
+              <strong>{group.title}</strong>
+              {group.items.map((item) => (
+                <a
+                  href={`#${item.view}`}
+                  key={`${group.title}-${item.label}`}
+                  onClick={(event) => handleNavigate(event, item.view)}
+                >
+                  {item.label}
+                  <ChevronRight size={18} aria-hidden="true" />
+                </a>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="mobile-menu-actions">
@@ -200,6 +261,67 @@ function SiteHeader() {
         </div>
       </div>
     </header>
+  );
+}
+
+function HomePage({ onNavigate }) {
+  return (
+    <>
+      <Hero />
+      <QuickClinics onNavigate={onNavigate} compact />
+      <LandingVisitSummary onNavigate={onNavigate} />
+    </>
+  );
+}
+
+function SubPage({ activeView, onNavigate }) {
+  const content = {
+    about: (
+      <>
+        <PageIntro
+          eyebrow="한의원 소개"
+          title="처음 방문해도 편안한 가족 한의원"
+          body="진료 방향, 공간 사진, 실제 사진 교체 예정 영역을 한 곳에서 확인할 수 있습니다."
+        />
+        <TrustSection />
+        <AboutSection />
+        <GallerySection />
+      </>
+    ),
+    clinics: (
+      <>
+        <PageIntro
+          eyebrow="진료 분야"
+          title="증상 중심으로 빠르게 찾는 진료 안내"
+          body="비염, 성장, 잦은감기, 통증처럼 환자가 실제로 찾는 불편함을 중심으로 정리했습니다."
+        />
+        <QuickClinics onNavigate={onNavigate} />
+      </>
+    ),
+    treatment: (
+      <>
+        <PageIntro
+          eyebrow="치료/한약 안내"
+          title="상태를 확인하고 필요한 진료를 안내합니다"
+          body="치료 보장을 암시하기보다 문진, 진료 방향, 내원 전 상담 흐름을 차분하게 설명합니다."
+        />
+        <TreatmentSection />
+      </>
+    ),
+    location: <LocationSection />,
+    notice: <NoticeSection />,
+  };
+
+  return <>{content[activeView] || content.about}</>;
+}
+
+function PageIntro({ eyebrow, title, body }) {
+  return (
+    <section className="page-intro" aria-labelledby={`${title}-title`}>
+      <p className="eyebrow">{eyebrow}</p>
+      <h1 id={`${title}-title`}>{title}</h1>
+      <p>{body}</p>
+    </section>
   );
 }
 
@@ -234,9 +356,13 @@ function Hero() {
   );
 }
 
-function QuickClinics() {
+function QuickClinics({ onNavigate, compact = false }) {
   return (
-    <section id="clinics" className="section section-tight" aria-labelledby="clinics-title">
+    <section
+      id="clinics"
+      className={`section section-tight ${compact ? "landing-clinics" : ""}`}
+      aria-labelledby="clinics-title"
+    >
       <div className="section-heading">
         <p className="eyebrow">빠른 진료 선택</p>
         <h2 id="clinics-title">어떤 불편함으로 오셨나요?</h2>
@@ -245,7 +371,7 @@ function QuickClinics() {
         </p>
       </div>
       <div className="clinic-grid">
-        {clinicGroups.map((clinic) => (
+        {(compact ? clinicGroups.slice(0, 2) : clinicGroups).map((clinic) => (
           <article className="clinic-card" key={clinic.title}>
             <clinic.icon className="card-icon" size={34} aria-hidden="true" />
             <span className="card-eyebrow">{clinic.eyebrow}</span>
@@ -256,12 +382,63 @@ function QuickClinics() {
                 <span key={symptom}>{symptom}</span>
               ))}
             </div>
-            <a className="text-link" href="#location">
+            <a
+              className="text-link"
+              href="#location"
+              onClick={(event) => {
+                event.preventDefault();
+                onNavigate("location");
+              }}
+            >
               상담 문의
               <ChevronRight size={17} aria-hidden="true" />
             </a>
           </article>
         ))}
+      </div>
+      {compact ? (
+        <button className="text-link landing-more-link" type="button" onClick={() => onNavigate("clinics")}>
+          전체 진료 분야 보기
+          <ChevronRight size={17} aria-hidden="true" />
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
+function LandingVisitSummary({ onNavigate }) {
+  return (
+    <section className="section landing-summary" aria-labelledby="landing-summary-title">
+      <div className="section-heading">
+        <p className="eyebrow">방문 전 핵심 정보</p>
+        <h2 id="landing-summary-title">전화, 위치, 진료시간만 빠르게 확인하세요</h2>
+      </div>
+      <div className="summary-grid">
+        <article className="info-card">
+          <Clock3 size={22} aria-hidden="true" />
+          <div>
+            <h3>진료시간</h3>
+            <p>평일 AM 10:00 - PM 7:30</p>
+            <strong>목요일 정기휴진</strong>
+          </div>
+        </article>
+        <article className="info-card">
+          <MapPin size={22} aria-hidden="true" />
+          <div>
+            <h3>오시는 길</h3>
+            <p>화정역 3번 출구 인근, 새롬프라자 2층</p>
+          </div>
+        </article>
+      </div>
+      <div className="landing-summary-actions">
+        <a className="btn btn-primary" href={`tel:${phoneNumber}`}>
+          <Phone size={19} aria-hidden="true" />
+          전화하기
+        </a>
+        <button className="btn btn-secondary" type="button" onClick={() => onNavigate("location")}>
+          <CalendarDays size={19} aria-hidden="true" />
+          자세히 보기
+        </button>
       </div>
     </section>
   );
@@ -451,7 +628,7 @@ function SiteFooter() {
   );
 }
 
-function BottomCTA() {
+function BottomCTA({ onNavigate }) {
   return (
     <nav className="bottom-cta" aria-label="빠른 연락">
       <a href={`tel:${phoneNumber}`}>
@@ -462,7 +639,13 @@ function BottomCTA() {
         <MapPin size={20} aria-hidden="true" />
         길찾기
       </a>
-      <a href="#location">
+      <a
+        href="#location"
+        onClick={(event) => {
+          event.preventDefault();
+          onNavigate("location");
+        }}
+      >
         <CalendarDays size={20} aria-hidden="true" />
         진료시간
       </a>

@@ -147,6 +147,21 @@ a {
   gap: 4px;
 }
 
+.mobile-menu-group {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.mobile-menu-group strong {
+  padding: 4px 12px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .mobile-menu nav a {
   display: flex;
   align-items: center;
@@ -300,6 +315,27 @@ h1 {
   color: #ffd7c8;
 }
 
+.page-intro {
+  width: min(var(--container), calc(100% - 40px));
+  margin: 0 auto;
+  padding: 56px 0 18px;
+}
+
+.page-intro h1 {
+  max-width: 720px;
+  margin-bottom: 14px;
+  color: var(--primary-dark);
+  font-size: clamp(32px, 9vw, 54px);
+  line-height: 1.16;
+}
+
+.page-intro p:not(.eyebrow) {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
 .section {
   width: min(var(--container), calc(100% - 40px));
   margin: 0 auto;
@@ -404,9 +440,65 @@ h1 {
   align-items: center;
   gap: 4px;
   min-height: 44px;
+  border: 0;
+  background: transparent;
+  padding: 0;
   color: var(--primary);
   font-size: 15px;
   font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.landing-clinics {
+  padding-bottom: 28px;
+}
+
+.landing-clinics .section-heading {
+  margin-bottom: 18px;
+}
+
+.landing-clinics .clinic-card {
+  min-height: 0;
+  padding: 16px;
+}
+
+.landing-clinics .clinic-card p,
+.landing-clinics .text-link {
+  display: none;
+}
+
+.landing-clinics .card-eyebrow {
+  margin-top: 10px;
+}
+
+.landing-clinics .clinic-card h3 {
+  margin-bottom: 0;
+}
+
+.landing-clinics .tag-row {
+  margin: 12px 0 0;
+}
+
+.landing-more-link {
+  margin-top: 14px;
+}
+
+.landing-summary {
+  padding-top: 24px;
+  padding-bottom: 112px;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.landing-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .trust-band {
@@ -640,6 +732,14 @@ h1 {
     width: min(var(--container), calc(100% - 64px));
   }
 
+  .page-intro {
+    width: min(var(--container), calc(100% - 64px));
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .site-footer {
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -669,6 +769,10 @@ h1 {
   }
 
   .desktop-nav a:hover {
+    color: var(--primary-dark);
+  }
+
+  .desktop-nav a.is-active {
     color: var(--primary-dark);
   }
 
@@ -704,6 +808,10 @@ h1 {
   .clinic-grid,
   .photo-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .landing-clinics .clinic-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .principle-grid,
